@@ -1,5 +1,5 @@
 import React from "react";
-
+//testing porpuses
 export const useDate = () => {
   const locale = "en";
   const [today, setDate] = React.useState(new Date()); // Save the current date to be able to trigger an update
