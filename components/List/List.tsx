@@ -35,10 +35,12 @@ export const List: FC<Props> = ({ tasks, onComplete, onDelete }) => {
               <FiCheck
                 onClick={() => onComplete(item.id)}
                 className="mr-3 cursor-pointer hover:text-green-600"
+                data-testid="check-icon"
               />
               <FiTrash2
                 onClick={() => onDelete(item.id)}
                 className="cursor-pointer hover:text-red-500"
+                data-testid="trash-icon"
               />
             </span>
           </li>
