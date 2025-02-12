@@ -36,6 +36,6 @@ describe('List Component', () => {
 
   test('applies line-through style to completed tasks', () => {
     const task2Element = screen.getByText('Task 2');
-    expect(task2Element).not.toHaveClass('line-through');
+    expect(task2Element).toHaveClass('line-through');
   });
 });
