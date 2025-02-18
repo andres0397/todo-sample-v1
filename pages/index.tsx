@@ -3,10 +3,10 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { v4 as uuidv4 } from "uuid";
-import { List } from "@/components/List/List";
+import { List } from "@/src/components/List/List";
 import { getTasksFromLocalStorage } from "@/utils";
 import { Formdata } from "@/interfaces";
-import { useDate } from "@/hooks/useDate";
+import { useDate } from "@/src/hooks/useDate";
 
 export default function Home() {
   const [tasks, setTasks] = useState<Formdata[]>(getTasksFromLocalStorage());
