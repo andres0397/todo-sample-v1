@@ -3,7 +3,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { List } from '@/src/components/List/List';
+import { List } from '../../../src/components/List/List';
 
 // Mock data for testing
 const mockTasks = [
