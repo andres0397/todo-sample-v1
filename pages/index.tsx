@@ -10,7 +10,7 @@ import { useDate } from "@/src/hooks/useDate";
 
 export default function Home() {
   const [tasks, setTasks] = useState<Formdata[]>(getTasksFromLocalStorage());
-  const { time } = useDate();
+  const { formattedTime: time } = useDate();
 
   const {
     getValues,
