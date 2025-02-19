@@ -2,15 +2,15 @@ import React from "react";
 
 export const useDate = () => {
   const locale = "en";
-  const [currentDate, setCurrentDate] = React.useState(new Date()); // Use a more descriptive name
+  const [currentDate, setCurrentDate] = React.useState(new Date()); 
 
   React.useEffect(() => {
     const timer = setInterval(() => {
-      // Updates the current date every minute
+     
       setCurrentDate(new Date());
     }, 60 * 1000);
 
-    return () => clearInterval(timer); // Clear the interval on unmount
+    return () => clearInterval(timer);
   }, []);
 
   const dayOfWeek = currentDate.toLocaleDateString(locale, { weekday: "long" });
