@@ -1,5 +1,5 @@
 # Step 1: Use a smaller base image for the build stage
-FROM node:16-alpine AS build
+FROM node:18-alpine AS build
 
 # Step 2: Set the working directory
 WORKDIR /usr/src/app
@@ -17,14 +17,15 @@ COPY . .
 RUN npm run build
 
 # Step 7: Create a new stage for the runtime environment
-FROM node:16-alpine
+FROM node:18-alpine
 
 # Step 8: Set the working directory for the runtime
 WORKDIR /usr/src/app
 
 # Step 9: Copy only the build output from the previous stage
-COPY --from=build /usr/src/app/.next ./public
+COPY --from=build /usr/src/app/.next ./.next
 COPY --from=build /usr/src/app/public ./public
+COPY --from=build /usr/src/app/package*.json ./
 
 # Step 10: Set environment variable for production
 ENV NODE_ENV=production
