@@ -76,9 +76,11 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        driver: docker-container
 
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -86,7 +88,9 @@ jobs:
           ${{ runner.os }}-buildx-
 
     - name: Build Docker image
-      run: docker build -t ghcr.io/andres0397/todo:${{ github.sha }} --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new .
+      run: |
+        docker buildx create --use
+        docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max --tag ghcr.io/andres0397/todo:${{ github.sha }} --output type=docker .
 
     - name: Log in to GHCR
       run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u andres0397 --password-stdin
