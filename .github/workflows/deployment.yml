@@ -1,0 +1,121 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Cache Node.js modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests and generate coverage
+      run: npm test -- --coverage
+
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "Tests failed! Please check the logs."
+        # Add any additional notification logic here, e.g., send an email or message
+
+  sonarqube:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: andres0397_todo-sample-v1
+          SONAR_ORGANIZATION: andres0397
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "SonarQube scan failed! Please check the logs."
+          # Add any additional notification logic here
+
+  build:
+    needs: sonarqube
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Cache Docker layers
+      uses: actions/cache@v4
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Build Docker image
+      run: docker build -t ghcr.io/andres0397/todo:${{ github.sha }} --cache-from=type=local,src=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache-new .
+
+    - name: Log in to GHCR
+      run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u andres0397 --password-stdin
+
+    - name: Push Docker image to GHCR
+      run: docker push ghcr.io/andres0397/todo:${{ github.sha }}
+
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "Docker build or push failed! Please check the logs."
+        # Add any additional notification logic here
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Trigger Koyeb Deployment
+      run: |
+        curl -X POST https://api.koyeb.com/v1/services/${{ secrets.KOYEB_SERVICE_ID }}/deploy \
+        -H "Authorization: Bearer ${{ secrets.KOYEB_API_TOKEN }}" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "image": "ghcr.io/andres0397/todo:${{ github.sha }}"
+        }'
+
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "Deployment to Koyeb failed! Please check the logs."
+        # Add any additional notification logic here
